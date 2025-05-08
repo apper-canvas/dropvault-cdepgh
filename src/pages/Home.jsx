@@ -1,11 +1,12 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useRef } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { toast } from 'react-toastify';
 import MainFeature from '../components/MainFeature';
 import getIcon from '../utils/iconUtils';
 
 function Home() {
   const [showStatistics, setShowStatistics] = useState(false);
+  const heroRef = useRef(null);
   
   // Icon declarations
   const FileIcon = getIcon('FileText');
@@ -13,6 +14,7 @@ function Home() {
   const DatabaseIcon = getIcon('Database');
   const ShieldIcon = getIcon('Shield');
   const SparklesIcon = getIcon('Sparkles');
+  const UploadIcon = getIcon('UploadCloud');
   
   // Statistics data for file storage
   const statistics = {
@@ -30,39 +32,124 @@ function Home() {
       });
     }
   };
+  
+  // Parallax effect setup
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"]
+  });
+  
+  const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+  const textY = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+  const fadeOut = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.9]);
+  
+  const handleUploadClick = () => {
+    toast.success("Upload feature initiated!", {
+      icon: <UploadIcon className="h-5 w-5" />
+    });
+    // In a real app, this would navigate to or open the upload interface
+  };
 
   return (
     <div className="min-h-screen">
       {/* Hero section with heading */}
-      <header className="bg-gradient-to-br from-primary/90 to-primary-dark text-white py-16 md:py-24">
-        <div className="container mx-auto px-4 md:px-8">
+      <header 
+        ref={heroRef} 
+        className="relative overflow-hidden text-white min-h-[80vh] flex items-center"
+      >
+        {/* Parallax background */}
+        <motion.div 
+          className="absolute inset-0 z-0"
+          style={{ y: backgroundY }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/90 to-primary-dark"></div>
+          
+          {/* Decorative elements with parallax effect */}
+          <motion.div 
+            className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-white/5 blur-3xl"
+            style={{ 
+              y: useTransform(scrollYProgress, [0, 1], ["0%", "20%"]),
+              x: useTransform(scrollYProgress, [0, 1], ["0%", "-10%"])
+            }}
+          ></motion.div>
+          
+          <motion.div 
+            className="absolute bottom-1/3 right-1/3 w-96 h-96 rounded-full bg-primary-light/10 blur-3xl"
+            style={{ 
+              y: useTransform(scrollYProgress, [0, 1], ["0%", "30%"]),
+              x: useTransform(scrollYProgress, [0, 1], ["0%", "15%"])
+            }}
+          ></motion.div>
+          
+          {/* Grid pattern overlay */}
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDM0aDR2MWgtNHYtMXptMC0yaDF2NGgtMXYtNHptMi0yaDF2MWgtMXYtMXptLTIgMGgxdjFoLTF2LTF6bS0yLTJoMXY1aC0xdi01em0xMC02aDR2MWgtNHYtMXptMC0yaDF2NGgtMXYtNHptMi0yaDF2MWgtMXYtMXptLTIgMGgxdjFoLTF2LTF6bS0yLTJoMXY1aC0xdi01em0tMi04aDZ2MWgtNnYtMXptMC0yaDF2NmgtMXYtNnptMi0yaDF2MWgtMXYtMXptLTIgMGgxdjFoLTF2LTF6bS0yLTJoMXY1aC0xdi01em0tMTQgMjBoNHYxaC00di0xem0wLTJoMXY0aC0xdi00em0yLTJoMXYxaC0xdi0xem0tMiAwaDFoLTF6bS0yLTJoMXY1aC0xdi01em0xMC02aDR2MWgtNHYtMXptMC0yaDF2NGgtMXYtNHptMi0yaDF2MWgtMXYtMXptLTIgMGgxdi0xem0tMi0yaDF2NWgtMXYtNXptLTItOGg2djFoLTZ2LTF6bTAtMmgxdjZoLTF2LTZ6bTItMmgxdjFoLTF2LTF6bS0yIDBoMXYxaC0xdi0xem0tMi0yaDFoLTF6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-50"></div>
+        </motion.div>
+        
+        {/* Content with parallax effect */}
+        <div className="container relative z-10 mx-auto px-4 md:px-8">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            style={{ 
+              y: textY, 
+              opacity: fadeOut,
+              scale: scale
+            }}
             className="max-w-4xl mx-auto text-center"
           >
-            <div className="flex justify-center mb-6">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="flex justify-center mb-8"
+            >
               <motion.div
                 whileHover={{ rotate: 5, scale: 1.1 }}
-                className="bg-white/20 p-4 rounded-2xl backdrop-blur-sm"
+                className="bg-white/20 p-4 rounded-2xl backdrop-blur-sm shadow-lg"
               >
                 <FileIcon className="h-12 w-12 md:h-16 md:w-16" />
               </motion.div>
-            </div>
+            </motion.div>
             
-            <h1 className="text-3xl md:text-5xl font-bold mb-6">
+            <motion.h1 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="text-4xl md:text-6xl font-bold mb-6"
+            >
               Secure File Management with DropVault
-            </h1>
-            <p className="text-xl md:text-2xl text-white/80 mb-8">
-              Upload, organize, and share your files with confidence
-            </p>
+            </motion.h1>
             
-            <div className="flex flex-wrap justify-center gap-4">
+            <motion.p 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="text-xl md:text-2xl text-white/80 mb-10"
+            >
+              Upload, organize, and share your files with confidence
+            </motion.p>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+              className="flex flex-wrap justify-center gap-4"
+            >
+              <motion.button
+                whileHover={{ scale: 1.05, boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)" }}
+                whileTap={{ scale: 0.95 }}
+                className="btn bg-accent text-white hover:bg-amber-500 py-3 px-8 text-lg shadow-lg"
+                onClick={handleUploadClick}
+              >
+                <div className="flex items-center gap-2">
+                  <UploadIcon className="h-5 w-5" />
+                  <span>Start Uploading</span>
+                </div>
+              </motion.button>
+              
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="btn bg-white text-primary hover:bg-white/90"
+                className="btn bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border border-white/30 py-3 px-6 text-lg"
                 onClick={toggleStatistics}
               >
                 <div className="flex items-center gap-2">
@@ -70,7 +157,7 @@ function Home() {
                   <span>View Statistics</span>
                 </div>
               </motion.button>
-            </div>
+            </motion.div>
           </motion.div>
         </div>
       </header>
@@ -78,12 +165,12 @@ function Home() {
       {/* Statistics section (conditionally rendered) */}
       {showStatistics && (
         <motion.section 
-          className="py-12 bg-surface-100 dark:bg-surface-800"
+          className="py-12 bg-surface-100 dark:bg-surface-800 relative z-20"
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
         >
-          <div className="container mx-auto px-4">
+          <div className="container mx-auto px-4 relative z-10">
             <h2 className="text-2xl font-bold text-center mb-8">System Statistics</h2>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
