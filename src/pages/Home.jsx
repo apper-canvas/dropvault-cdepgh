@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, useAnimate } from 'framer-motion';
 import { toast } from 'react-toastify';
 import MainFeature from '../components/MainFeature';
 import getIcon from '../utils/iconUtils';
@@ -7,6 +7,8 @@ import getIcon from '../utils/iconUtils';
 function Home() {
   const [showStatistics, setShowStatistics] = useState(false);
   const heroRef = useRef(null);
+  const [typingScope, animateTyping] = useAnimate();
+  const [bounceScope, animateBounce] = useAnimate();
   
   // Icon declarations
   const FileIcon = getIcon('FileText');
@@ -42,6 +44,22 @@ function Home() {
   const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
   const textY = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
   const fadeOut = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+  
+  // Typewriter animation
+  useState(() => {
+    const sequence = [
+      [typingScope.current, { width: "0%" }, { duration: 0 }],
+      [typingScope.current, { width: "100%" }, { duration: 1.5, ease: "easeInOut" }],
+      // Bounce animation for emoji
+      [
+        bounceScope.current, 
+        { y: [0, -15, 0], scale: [1, 1.2, 1] }, 
+        { duration: 0.6, ease: "easeInOut", delay: 1.5 }
+      ]
+    ];
+    
+    animateTyping(sequence);
+  }, []);
   const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.9]);
   
   const handleUploadClick = () => {
@@ -112,11 +130,32 @@ function Home() {
             
             <motion.h1 
               initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
+              animate={{ opacity: 1, y: 0, transition: { duration: 0.6, delay: 0.3 } }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="text-4xl md:text-6xl font-bold mb-6"
+              className="flex flex-col items-center text-4xl md:text-6xl font-bold mb-6 leading-tight"
             >
-              Secure File Management with DropVault
+              <span className="block mb-2">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-amber-200 to-white">
+                  Elevate Your Files
+                </span>
+              </span>
+              
+              <span className="block mb-2 relative overflow-hidden">
+                <span ref={bounceScope} className="inline-block mr-2">🚀</span>
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-accent to-amber-300 drop-shadow-sm">
+                  Simplified
+                </span>
+                <span className="text-white"> Storage </span>
+              </span>
+              
+              <span className="block relative overflow-hidden">
+                <span className="relative inline-flex items-center">
+                  <span className="whitespace-nowrap bg-clip-text text-transparent bg-gradient-to-r from-white to-white/90">with DropVault's </span>
+                  <span ref={typingScope} className="relative overflow-hidden inline-block whitespace-nowrap bg-clip-text text-transparent bg-gradient-to-r from-secondary-light to-secondary">
+                    secure management
+                  </span>
+                </span>
+              </span>
             </motion.h1>
             
             <motion.p 
