@@ -74,7 +74,7 @@ function Home() {
       {/* Hero section with heading */}
       <header 
         ref={heroRef} 
-        className="relative overflow-hidden text-white min-h-[80vh] flex items-center bg-primary-dark bg-[#3730A3]"
+        className="relative overflow-hidden text-white min-h-[80vh] flex items-center bg-primary-dark"
       >
         {/* Parallax background */}
         <motion.div 
