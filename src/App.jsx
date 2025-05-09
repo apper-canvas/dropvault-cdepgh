@@ -4,7 +4,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import { motion } from 'framer-motion';
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
-import getIcon from './utils/iconUtils';
+import getIcon1 from './utils/iconUtils';
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
