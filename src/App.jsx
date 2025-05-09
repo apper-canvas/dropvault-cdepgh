@@ -43,7 +43,7 @@ function App() {
         whileTap={{ scale: 0.9 }}
         aria-label="Toggle dark mode"
       >
-        {darkMode ? <SunIcon className="h-5 w-5 text-yellow-400" /> : <MoonIcon className="h-5 w-5 text-green-600" />}
+        {darkMode ? <SunIcon className="h-5 w-5 text-yellow-400" /> : <MoonIcon className="h-5 w-5 text-indigo-600" />}
       </motion.button>
 
       {/* Main content */}
