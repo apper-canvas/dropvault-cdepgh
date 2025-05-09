@@ -67,7 +67,6 @@ function App() {
         toastClassName="text-sm font-medium rounded-lg"
       />
     </div>
-    </div>  
   );
 }
 
