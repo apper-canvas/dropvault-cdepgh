@@ -65,8 +65,7 @@ function App() {
         pauseOnHover
         theme={darkMode ? "dark" : "light"}
         toastClassName="text-sm font-medium rounded-lg"
-      />
-    </div>
+      />  
   );
 }
 
