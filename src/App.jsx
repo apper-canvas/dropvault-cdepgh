@@ -35,7 +35,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen">
+    <>
       {/* Theme toggle button */}
       <motion.button
         className="fixed bottom-4 right-4 z-50 p-3 rounded-full bg-surface-200 dark:bg-surface-800 shadow-lg"
@@ -66,7 +66,7 @@ function App() {
         theme={darkMode ? "dark" : "light"}
         toastClassName="text-sm font-medium rounded-lg"
       />
-    </div>
+    </>
   );
 }
 
