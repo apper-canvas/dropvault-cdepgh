@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import { motion } from 'framer-motion';
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
@@ -15,8 +15,8 @@ function App() {
   });
 
   // Icon declarations
-  const MoonIcon = getIcon('Moon');
-  const SunIcon = getIcon('Sun');
+  const MoonIcon = getIcon1('Moon');
+  const SunIcon = getIcon1('Sun');
 
   useEffect(() => {
     // Update the HTML class when darkMode changes
@@ -65,7 +65,8 @@ function App() {
         pauseOnHover
         theme={darkMode ? "dark" : "light"}
         toastClassName="text-sm font-medium rounded-lg"
-      />  
+      />
+    </div>  
   );
 }
 
