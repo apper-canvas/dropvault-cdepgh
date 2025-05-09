@@ -66,6 +66,7 @@ function App() {
         theme={darkMode ? "dark" : "light"}
         toastClassName="text-sm font-medium rounded-lg"
       />
+    </div>
     </div>  
   );
 }
