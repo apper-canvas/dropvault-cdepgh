@@ -1,6 +1,7 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
+import fileService from '../services/fileService';
 import getIcon from '../utils/iconUtils';
 
 function MainFeature() {
@@ -11,6 +12,7 @@ function MainFeature() {
   const [isUploading, setIsUploading] = useState(false);
   const [folderName, setFolderName] = useState('');
   const [selectedFileType, setSelectedFileType] = useState('all');
+  const [storageUsage, setStorageUsage] = useState({ used: 0, total: 2 * 1024 * 1024 * 1024 }); // 2GB default
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
   
   // Refs
@@ -32,6 +34,28 @@ function MainFeature() {
   const TrashIcon = getIcon('Trash');
   const ExternalLinkIcon = getIcon('ExternalLink');
   const RefreshCwIcon = getIcon('RefreshCw');
+
+  // Fetch files from backend on component mount
+  useEffect(() => {
+    const fetchFiles = async () => {
+      try {
+        const filters = {};
+        if (selectedFileType !== 'all') {
+          filters.fileType = selectedFileType;
+        }
+        if (folderName) {
+          filters.folder = folderName;
+        }
+        
+        const filesData = await fileService.getAllFiles(filters);
+        setFiles(filesData);
+      } catch (error) {
+        console.error("Error fetching files:", error);
+        toast.error("Failed to load files");
+      }
+    };
+    fetchFiles();
+  }, [selectedFileType, folderName]);
   const XIcon = getIcon('X');
   
   // File type detection helpers
@@ -105,16 +129,21 @@ function MainFeature() {
   // Process files before adding to state
   const processFiles = (newFiles) => {
     // Process files and add unique IDs
-    const processedFiles = newFiles.map(file => ({
-      id: `file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      file: file,
-      folder: folderName || 'Main Directory',
-      uploadedAt: new Date(),
-      preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null
-    }));
+    const processedFiles = newFiles.map(file => {
+      const fileTypeLabel = getFileTypeLabel(file.type);
+      return {
+        id: `file-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        file: file,
+        folder: folderName || 'Main Directory',
+        uploadedAt: new Date(),
+        preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null,
+        fileTypeLabel: fileTypeLabel,
+        upload_status: "Pending"
+      };
+    });
     
     // Update state with new files
     setFiles(prev => [...prev, ...processedFiles]);
@@ -131,8 +160,8 @@ function MainFeature() {
   };
   
   // Upload files simulation
-  const uploadFiles = () => {
-    if (files.length === 0) {
+  const uploadFiles = async () => {
+    if (files.length === 0 || files.every(f => f.upload_status === "Completed")) {
       toast.error("No files to upload", {
         icon: <XIcon className="h-5 w-5" />
       });
@@ -142,52 +171,72 @@ function MainFeature() {
     setIsUploading(true);
     const newProgress = {};
     
-    // Set initial progress for all files
+    // Filter out already uploaded files
+    const filesToUpload = files.filter(file => file.upload_status !== "Completed");
+    
+    if (filesToUpload.length === 0) {
+      setIsUploading(false);
+      toast.info("All files already uploaded");
+      return;
+    }
+    
+    // Set initial progress for files to upload
     files.forEach(file => {
-      newProgress[file.id] = 0;
+      if (file.upload_status !== "Completed") {
+        newProgress[file.id] = 0;
+      }
     });
     setUploadProgress(newProgress);
     
-    // Simulate progress for each file
-    files.forEach(file => {
-      const duration = 1000 + Math.random() * 2000; // Random duration between 1-3 seconds
+    // Process each file with progress updates
+    for (const file of filesToUpload) {
+      const duration = 1500 + Math.random() * 1500; // Random duration between 1.5-3 seconds
       const interval = 100;
       const steps = duration / interval;
-      let currentStep = 0;
       
-      const progressInterval = setInterval(() => {
-        currentStep++;
-        const progress = Math.min(Math.round((currentStep / steps) * 100), 100);
-        
+      // Update progress at intervals
+      for (let step = 1; step <= steps; step++) {
+        await new Promise(resolve => setTimeout(resolve, interval));
+        const progress = Math.min(Math.round((step / steps) * 100), 99); // Stop at 99% until API call completes
         setUploadProgress(prev => ({
           ...prev,
           [file.id]: progress
         }));
-        
-        // Clear interval when reaches 100%
-        if (progress === 100) {
-          clearInterval(progressInterval);
-          
-          // Check if all files are uploaded
-          const allUploaded = Object.values(newProgress).every(p => p === 100);
-          if (allUploaded) {
-            setTimeout(() => {
-              setIsUploading(false);
-              toast.success("All files uploaded successfully!", {
-                icon: <FileIcon className="h-5 w-5" />
-              });
-            }, 500);
-          }
+      }
+      
+      try {
+        // Make actual API call to create file record
+        await fileService.uploadFile(file);
+        setUploadProgress(prev => ({
+          ...prev,
+          [file.id]: 100
+        }));
+        // Update file status in state
+        setFiles(prev => prev.map(f => f.id === file.id ? {...f, upload_status: "Completed"} : f));
+      } catch (error) {
+        console.error("Error uploading file:", error);
+        toast.error(`Failed to upload ${file.name}`);
         }
-      }, interval);
-    });
   };
   
   // Delete file
-  const deleteFile = (fileId) => {
-    setFiles(prev => prev.filter(file => file.id !== fileId));
-    toast.info("File removed", {
-      icon: <TrashIcon className="h-5 w-5" />
+  // All files have been processed
+  setIsUploading(false);
+  toast.success(`${filesToUpload.length} file${filesToUpload.length > 1 ? 's' : ''} uploaded successfully!`, {
+    icon: <FileIcon className="h-5 w-5" />
+  });
+  
+  // Calculate new storage usage
+  const newUsed = files.reduce((total, file) => total + file.size, 0);
+  setStorageUsage(prev => ({ ...prev, used: newUsed }));
+};
+  
+// Delete file
+const deleteFile = async (fileId) => {
+  try {
+    await fileService.deleteFile(fileId);
+    setFiles(prev => prev.filter(file => file.Id !== fileId || file.id !== fileId));
+    toast.success("File deleted", {
     });
   };
   
@@ -214,14 +263,8 @@ function MainFeature() {
     ? files 
     : files.filter(file => {
       if (selectedFileType === 'image') return file.type.startsWith('image/');
-      if (selectedFileType === 'document') return file.type.startsWith('text/');
-      if (selectedFileType === 'audio') return file.type.startsWith('audio/');
-      if (selectedFileType === 'video') return file.type.startsWith('video/');
-      if (selectedFileType === 'archive') return file.type.includes('zip') || file.type.includes('rar') || file.type.includes('tar');
-      if (selectedFileType === 'code') return file.type.includes('json') || file.type.includes('xml') || file.type.includes('html');
-      return false;
+      return (file.file_type_label || getFileTypeLabel(file.type)).toLowerCase() === selectedFileType;
     });
-
   return (
     <div className="w-full max-w-5xl mx-auto">
       <div className="mb-8 text-center">
@@ -401,42 +444,45 @@ function MainFeature() {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {filteredFiles.map(file => (
                   <motion.div
-                    key={file.id}
+                    key={file.id || file.Id}
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     className="bg-surface-50 dark:bg-surface-900 rounded-lg overflow-hidden border border-surface-200 dark:border-surface-700"
                   >
                     <div className="aspect-square relative overflow-hidden bg-surface-100 dark:bg-surface-800 flex items-center justify-center">
-                      {file.preview ? (
+                      {file.preview || file.preview_url ? (
                         <img 
-                          src={file.preview} 
+                          src={file.preview || file.preview_url} 
                           alt={file.name} 
                           className="w-full h-full object-cover"
                         />
                       ) : (
                         <div className="text-surface-400 dark:text-surface-500 p-6">
-                          {React.createElement(getFileIcon(file.type), { className: "h-16 w-16 mx-auto" })}
+                          {React.createElement(getFileIcon(file.type || ""), { className: "h-16 w-16 mx-auto" })}
                         </div>
                       )}
                       
-                      {uploadProgress[file.id] > 0 && (
-                        <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1">
-                          <div 
-                            className="bg-primary h-1 rounded-full" 
-                            style={{ width: `${uploadProgress[file.id]}%` }}
-                          />
+                      {(uploadProgress[file.id] > 0 || file.upload_progress > 0) && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 flex justify-between items-center">
+                          <div className="w-full mr-2">
+                            <div 
+                              className="bg-primary h-1 rounded-full" 
+                              style={{ width: `${uploadProgress[file.id] || file.upload_progress || 0}%` }}
+                            />
+                          </div>
+                          <span className="text-[10px]">{uploadProgress[file.id] || file.upload_progress || 0}%</span>
                         </div>
                       )}
                     </div>
                     
                     <div className="p-3">
                       <div className="flex justify-between items-start mb-1">
-                        <h4 className="font-medium text-sm truncate" title={file.name}>
+                          {file.name || file.Name}
                           {file.name}
                         </h4>
                         <button
-                          className="text-red-500 hover:text-red-700 p-1"
-                          onClick={() => deleteFile(file.id)}
+                          onClick={() => deleteFile(file.id || file.Id)}
+                          disabled={isUploading || (file.upload_status === "In Progress")}
                           disabled={isUploading}
                           aria-label="Delete file"
                         >
@@ -444,8 +490,8 @@ function MainFeature() {
                         </button>
                       </div>
                       
-                      <div className="flex justify-between text-xs text-surface-500 dark:text-surface-400">
-                        <span>{getFileTypeLabel(file.type)}</span>
+                        <span>{file.file_type_label || getFileTypeLabel(file.type || "")}</span>
+                        <span>{formatFileSize(file.size || 0)}</span>
                         <span>{formatFileSize(file.size)}</span>
                       </div>
                     </div>
@@ -456,26 +502,26 @@ function MainFeature() {
               <div className="divide-y divide-surface-200 dark:divide-surface-700">
                 {filteredFiles.map(file => (
                   <motion.div
-                    key={file.id}
+                    key={file.id || file.Id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="flex items-center py-3 px-4 hover:bg-surface-50 dark:hover:bg-surface-700/30"
                   >
                     <div className="h-10 w-10 mr-3 flex-shrink-0 bg-surface-100 dark:bg-surface-800 rounded flex items-center justify-center">
-                      {file.preview ? (
+                      {file.preview || file.preview_url ? (
                         <img 
-                          src={file.preview} 
-                          alt={file.name} 
+                          src={file.preview || file.preview_url} 
+                          alt={file.name || file.Name} 
                           className="h-full w-full object-cover rounded"
                         />
                       ) : (
-                        React.createElement(getFileIcon(file.type), { className: "h-5 w-5 text-surface-500" })
+                        React.createElement(getFileIcon(file.type || ""), { className: "h-5 w-5 text-surface-500" })
                       )}
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium truncate" title={file.name}>
-                        {file.name}
+                      <h4 className="font-medium truncate" title={file.name || file.Name}>
+                        {file.name || file.Name}
                       </h4>
                       <div className="flex text-xs text-surface-500 dark:text-surface-400 mt-1">
                         <span className="mr-3">{getFileTypeLabel(file.type)}</span>
@@ -528,9 +574,9 @@ function MainFeature() {
           </div>
           
           <div className="flex justify-between text-sm text-surface-500 dark:text-surface-400">
-            <span>
+              {formatFileSize(storageUsage.used)} used
               {formatFileSize(files.reduce((total, file) => total + file.size, 0))} used
-            </span>
+            <span>{formatFileSize(storageUsage.total - storageUsage.used)} free</span>
             <span>2 GB free</span>
           </div>
         </div>

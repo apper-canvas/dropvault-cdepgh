@@ -2,78 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
-@import 'react-toastify/dist/ReactToastify.css';
-
-@layer base {
-  html {
-    font-family: 'Inter', system-ui, sans-serif;
-    scroll-behavior: smooth;
-  }
-  
-  body {
-    @apply text-surface-800 dark:text-surface-100 bg-surface-50 dark:bg-surface-900 min-h-screen transition-colors duration-300;
-  }
-  
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-heading font-semibold;
-  }
-  
-  h1 {
-    @apply text-3xl md:text-4xl lg:text-5xl;
-  }
-  
-  h2 {
-    @apply text-2xl md:text-3xl lg:text-4xl;
-  }
-  
-  h3 {
-    @apply text-xl md:text-2xl lg:text-3xl;
-  }
+/* Base styles */
+body {
+  font-family: 'Inter', sans-serif;
+  @apply antialiased;
 }
 
+/* Button styles */
 @layer components {
   .btn {
-    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-60 disabled:cursor-not-allowed;
   }
   
   .btn-primary {
-    @apply bg-primary text-white hover:bg-primary-dark focus:ring-primary;
-  }
-  
-  .btn-secondary {
-    @apply bg-secondary text-white hover:bg-secondary-dark focus:ring-secondary;
+    @apply bg-primary hover:bg-primary-dark text-white focus:ring-primary-light;
   }
   
   .btn-outline {
-    @apply border border-surface-300 dark:border-surface-700 hover:bg-surface-100 dark:hover:bg-surface-800 focus:ring-surface-300 dark:focus:ring-surface-700;
-  }
-  
-  .card {
-    @apply bg-white dark:bg-surface-800 rounded-xl shadow-card transition-all duration-200;
-  }
-  
-  .input {
-    @apply w-full px-4 py-2 rounded-lg border border-surface-300 dark:border-surface-700 bg-white dark:bg-surface-800 
-           text-surface-800 dark:text-surface-100 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent
-           placeholder:text-surface-400;
+    @apply border border-surface-300 dark:border-surface-700 bg-transparent hover:bg-surface-100 dark:hover:bg-surface-800
+           text-surface-700 dark:text-surface-300 focus:ring-surface-400;
   }
 }
 
-@layer utilities {
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+/* Card styles */
+@layer components {
+  .card {
+    @apply bg-white dark:bg-surface-800 rounded-xl shadow-card;
   }
   
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-  
-  .glass-effect {
-    @apply bg-white/70 dark:bg-surface-900/70 backdrop-blur-md;
-  }
-  
-  .neu-light {
-    @apply shadow-neu-light dark:shadow-neu-dark;
+  .icon-container {
+    @apply p-3 rounded-full;
   }
 }
