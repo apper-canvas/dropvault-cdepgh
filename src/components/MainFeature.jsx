@@ -479,9 +479,8 @@ const deleteFile = async (fileId) => {
                     
                     <div className="p-3">
                       <div className="flex justify-between items-start mb-1">
-                          {file.name || file.Name}
-                          {file.name}
-                        </h4>
+                        <h4 className="font-medium truncate" title={file.name || file.Name}>
+                          {file.name || file.Name}</h4>
                         <button
                           onClick={() => deleteFile(file.id || file.Id)}
                           disabled={isUploading || (file.upload_status === "In Progress")}
