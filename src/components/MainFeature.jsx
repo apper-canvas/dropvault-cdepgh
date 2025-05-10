@@ -238,6 +238,8 @@ const deleteFile = async (fileId) => {
     setFiles(prev => prev.filter(file => file.Id !== fileId || file.id !== fileId));
     toast.success("File deleted", {
     });
+  } catch (error) {
+    toast.error(`Failed to delete file: ${error.message || 'Unknown error'}`);
   };
   
   // Delete all files
