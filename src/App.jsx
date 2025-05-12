@@ -101,49 +101,51 @@ function App() {
 
   return (
     <AuthContext.Provider value={authMethods}>
-      {/* Theme toggle button */}
-      <motion.button
-        className="fixed bottom-4 right-4 z-50 p-3 rounded-full bg-surface-200 dark:bg-surface-800 shadow-lg"
-        onClick={toggleDarkMode}
-        whileTap={{ scale: 0.9 }}
-        aria-label="Toggle dark mode"
-      >
-        {darkMode ? <SunIcon className="h-5 w-5 text-yellow-400" /> : <MoonIcon className="h-5 w-5 text-indigo-600" />}
-      </motion.button>
+      <>
+        {/* Theme toggle button */}
+        <motion.button
+          className="fixed bottom-4 right-4 z-50 p-3 rounded-full bg-surface-200 dark:bg-surface-800 shadow-lg"
+          onClick={toggleDarkMode}
+          whileTap={{ scale: 0.9 }}
+          aria-label="Toggle dark mode"
+        >
+          {darkMode ? <SunIcon className="h-5 w-5 text-yellow-400" /> : <MoonIcon className="h-5 w-5 text-indigo-600" />}
+        </motion.button>
 
-      {/* Main content */}
-      <Routes>
-        {/* Public home route */}
-        <Route path="/" element={isAuthenticated ? <Dashboard /> : <Home />} />
-        
-        {/* Public routes - accessible only when NOT authenticated */}
-        <Route element={<PublicRoute />}>
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-        </Route>
-        
-        {/* Protected routes - require authentication */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-        </Route>
-        
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+        {/* Main content */}
+        <Routes>
+          {/* Public home route */}
+          <Route path="/" element={isAuthenticated ? <Dashboard /> : <Home />} />
+          
+          {/* Public routes - accessible only when NOT authenticated */}
+          <Route element={<PublicRoute />}>
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+          </Route>
+          
+          {/* Protected routes - require authentication */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+          </Route>
+          
+          <Route path="*" element={<NotFound />} />
+        </Routes>
 
-      {/* Toast notification container */}
-      <ToastContainer
-        position="top-right"
-        autoClose={4000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme={darkMode ? "dark" : "light"}
-        toastClassName="text-sm font-medium rounded-lg"
-      />
+        {/* Toast notification container */}
+        <ToastContainer
+          position="top-right"
+          autoClose={4000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme={darkMode ? "dark" : "light"}
+          toastClassName="text-sm font-medium rounded-lg"
+        />
+      </>
     </AuthContext.Provider>
   );
 }
