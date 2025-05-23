@@ -490,9 +490,8 @@ const deleteFile = async (fileId) => {
                           <TrashIcon className="h-4 w-4" />
                         </button>
                       </div>
-                      
+                      <div className="text-xs text-surface-500 dark:text-surface-400 flex justify-between mt-1">
                         <span>{file.file_type_label || getFileTypeLabel(file.type || "")}</span>
-                        <span>{formatFileSize(file.size || 0)}</span>
                         <span>{formatFileSize(file.size)}</span>
                       </div>
                     </div>
@@ -575,9 +574,8 @@ const deleteFile = async (fileId) => {
           </div>
           
           <div className="flex justify-between text-sm text-surface-500 dark:text-surface-400">
-              {formatFileSize(storageUsage.used)} used
-              {formatFileSize(files.reduce((total, file) => total + file.size, 0))} used
-            <span>{formatFileSize(storageUsage.total - storageUsage.used)} free</span>
+            <span>{formatFileSize(files.reduce((total, file) => total + (file.size || 0), 0))} used</span>
+            <span>{formatFileSize(storageUsage.total - files.reduce((total, file) => total + (file.size || 0), 0))} free</span>
             <span>2 GB free</span>
           </div>
         </div>
